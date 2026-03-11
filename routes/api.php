@@ -1,14 +1,25 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PlatController;
+use App\Http\Controllers\Api\CategorieController;
 use Illuminate\Support\Facades\Route;
 
-// Routes publiques
+//had les routes public
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login',    [AuthController::class, 'login']);
 
-// Routes protégées
+// hado protected
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user',[AuthController::class, 'user']);
+    Route::get('/user',    [AuthController::class, 'user']);
+
+    // Plats
+    Route::apiResource('plats', PlatController::class);
+
+    // Categories
+    Route::apiResource('categories', CategorieController::class);
+    Route::post('categories/{category}/plats', [CategorieController::class, 'associerPlats']);
 });

@@ -3,63 +3,78 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCategorieRequest;
+use App\Http\Requests\UpdateCategorieRequest;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategorieController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $categories = Category::where('user_id', $request->user()->id)
+                              ->with('plats')
+                              ->get();
+
+        return response()->json($categories, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreCategorieRequest $request)
     {
-        //
+        $this->authorize('create', Category::class);
+
+        $category = Category::create([
+            ...$request->validated(),
+            'user_id' => $request->user()->id,
+        ]);
+
+        return response()->json([
+            'message'  => 'Catégorie créée avec succès',
+            'category' => $category
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show(Category $category)
     {
-        //
+        $this->authorize('view', $category);
+        return response()->json($category->load('plats'), 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(UpdateCategorieRequest $request, Category $category)
     {
-        //
+        $this->authorize('update', $category);
+        $category->update($request->validated());
+
+        return response()->json([
+            'message'  => 'Catégorie modifiée avec succès',
+            'category' => $category
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(Category $category)
     {
-        //
+        $this->authorize('delete', $category);
+        $category->delete();
+
+        return response()->json([
+            'message' => 'Catégorie supprimée avec succès'
+        ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function associerPlats(Request $request, Category $category)
     {
-        //
-    }
+        $this->authorize('update', $category);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $request->validate([
+            'plats'   => 'required|array',
+            'plats.*' => 'exists:plats,id'
+        ]);
+
+        $category->plats()->syncWithoutDetaching($request->plats);
+
+        return response()->json([
+            'message'  => 'Plats associés avec succès',
+            'category' => $category->load('plats')
+        ], 200);
     }
 }
