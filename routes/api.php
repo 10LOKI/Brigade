@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 //had les routes public
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login',    [AuthController::class, 'login']);
+Route::post('/login',    [AuthController::class, 'login'])->name('login');
 
 // hado protected
 Route::middleware('auth:sanctum')->group(function () {

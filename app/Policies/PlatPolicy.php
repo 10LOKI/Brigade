@@ -1,5 +1,4 @@
 <?php
-// app/Policies/PlatPolicy.php
 
 namespace App\Policies;
 
@@ -25,13 +24,11 @@ class PlatPolicy
 
     public function update(User $user, Plat $plat): bool
     {
-        return $user->role === 'admin' 
-            && $user->restaurant_id === $plat->restaurant_id;
+        return $user->role === 'admin' && $user->id === $plat->user_id;
     }
 
     public function delete(User $user, Plat $plat): bool
     {
-        return $user->role === 'admin' 
-            && $user->restaurant_id === $plat->restaurant_id;
+        return $user->role === 'admin' && $user->id === $plat->user_id;
     }
 }
