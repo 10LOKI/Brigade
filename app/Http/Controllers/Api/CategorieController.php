@@ -1,65 +1,90 @@
 <?php
+// app/Http/Controllers/Api/CategorieController.php
 
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCategorieRequest;
+use App\Http\Requests\UpdateCategorieRequest;
+use App\Models\Categorie;
 use Illuminate\Http\Request;
 
 class CategorieController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // GET /api/categories
+    public function index(Request $request)
     {
-        //
+        $categories = Categorie::where('restaurant_id', $request->user()->restaurant_id)
+                               ->with('plats')
+                               ->get();
+
+        return response()->json($categories, 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // POST /api/categories
+    public function store(StoreCategorieRequest $request)
     {
-        //
+        $this->authorize('create', Categorie::class);
+
+        $categorie = Categorie::create([
+            ...$request->validated(),
+            'restaurant_id' => $request->user()->restaurant_id,
+        ]);
+
+        return response()->json([
+            'message'    => 'Catégorie créée avec succès',
+            'categorie'  => $categorie
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // GET /api/categories/{id}
+    public function show(Categorie $categorie)
     {
-        //
+        $this->authorize('view', $categorie);
+
+        return response()->json($categorie->load('plats'), 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // PUT /api/categories/{id}
+    public function update(UpdateCategorieRequest $request, Categorie $categorie)
     {
-        //
+        $this->authorize('update', $categorie);
+
+        $categorie->update($request->validated());
+
+        return response()->json([
+            'message'   => 'Catégorie modifiée avec succès',
+            'categorie' => $categorie
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    // DELETE /api/categories/{id}
+    public function destroy(Categorie $categorie)
     {
-        //
+        $this->authorize('delete', $categorie);
+
+        $categorie->delete();
+
+        return response()->json([
+            'message' => 'Catégorie supprimée avec succès'
+        ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // POST /api/categories/{id}/plats
+    public function associerPlats(Request $request, Categorie $categorie)
     {
-        //
-    }
+        $this->authorize('update', $categorie);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $request->validate([
+            'plats'   => 'required|array',
+            'plats.*' => 'exists:plats,id'
+        ]);
+
+        $categorie->plats()->syncWithoutDetaching($request->plats);
+
+        return response()->json([
+            'message'   => 'Plats associés avec succès',
+            'categorie' => $categorie->load('plats')
+        ], 200);
     }
 }

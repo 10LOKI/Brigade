@@ -4,6 +4,7 @@
 namespace App\Policies;
 
 use App\Models\Categorie;
+use App\Models\Category;
 use App\Models\User;
 
 class CategoriePolicy
@@ -13,7 +14,7 @@ class CategoriePolicy
         return true;
     }
 
-    public function view(User $user, Categorie $categorie): bool
+    public function view(User $user, Category $categorie): bool
     {
         return true;
     }
@@ -23,13 +24,13 @@ class CategoriePolicy
         return $user->role === 'admin';
     }
 
-    public function update(User $user, Categorie $categorie): bool
+    public function update(User $user, Category $categorie): bool
     {
         return $user->role === 'admin' 
             && $user->restaurant_id === $categorie->restaurant_id;
     }
 
-    public function delete(User $user, Categorie $categorie): bool
+    public function delete(User $user, Category $categorie): bool
     {
         return $user->role === 'admin' 
             && $user->restaurant_id === $categorie->restaurant_id;
