@@ -18,10 +18,12 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        $role = User::count() === 0 ? 'admin' : 'user';
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $role
         ]);
 
         return response()->json([

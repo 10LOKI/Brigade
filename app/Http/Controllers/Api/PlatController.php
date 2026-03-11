@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Api/PlatController.php
 
 namespace App\Http\Controllers\Api;
 
@@ -11,23 +10,19 @@ use Illuminate\Http\Request;
 
 class PlatController extends Controller
 {
-    // GET /api/plats
     public function index(Request $request)
     {
-        $plats = Plat::where('restaurant_id', $request->user()->restaurant_id)
-                     ->get();
-
+        $plats = Plat::where('user_id', $request->user()->id)->get();
         return response()->json($plats, 200);
     }
 
-    // POST /api/plats
     public function store(StorePlatRequest $request)
     {
         $this->authorize('create', Plat::class);
 
         $plat = Plat::create([
             ...$request->validated(),
-            'restaurant_id' => $request->user()->restaurant_id,
+            'user_id' => $request->user()->id,
         ]);
 
         return response()->json([
@@ -36,19 +31,15 @@ class PlatController extends Controller
         ], 201);
     }
 
-    // GET /api/plats/{id}
     public function show(Plat $plat)
     {
         $this->authorize('view', $plat);
-
         return response()->json($plat, 200);
     }
 
-    // PUT /api/plats/{id}
     public function update(UpdatePlatRequest $request, Plat $plat)
     {
         $this->authorize('update', $plat);
-
         $plat->update($request->validated());
 
         return response()->json([
@@ -57,11 +48,9 @@ class PlatController extends Controller
         ], 200);
     }
 
-    // DELETE /api/plats/{id}
     public function destroy(Plat $plat)
     {
         $this->authorize('delete', $plat);
-
         $plat->delete();
 
         return response()->json([
