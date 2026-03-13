@@ -1,5 +1,4 @@
 <?php
-// app/Http/Requests/UpdatePlatRequest.php
 
 namespace App\Http\Requests;
 
@@ -18,7 +17,7 @@ class UpdatePlatRequest extends FormRequest
             'nom'           => 'sometimes|string|max:255',
             'description'   => 'nullable|string',
             'prix'          => 'sometimes|numeric|min:0',
-            'image'         => 'nullable|string',
+            'image'         => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'disponible'    => 'boolean',
             'stock'         => 'sometimes|integer|min:0',
         ];

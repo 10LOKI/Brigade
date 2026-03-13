@@ -7,6 +7,7 @@ use App\Http\Requests\StorePlatRequest;
 use App\Http\Requests\UpdatePlatRequest;
 use App\Models\Plat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PlatController extends Controller
 {
@@ -20,8 +21,15 @@ class PlatController extends Controller
     {
         $this->authorize('create', Plat::class);
 
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $path = Storage::disk('cloudinary')->put('plats', $request->file('image'));
+            $data['image'] = $path;
+        }
+
         $plat = Plat::create([
-            ...$request->validated(),
+            ...$data,
             'user_id' => $request->user()->id,
         ]);
 
@@ -40,7 +48,18 @@ class PlatController extends Controller
     public function update(UpdatePlatRequest $request, Plat $plat)
     {
         $this->authorize('update', $plat);
-        $plat->update($request->validated());
+
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            if ($plat->image) {
+                Storage::disk('cloudinary')->delete($plat->image);
+            }
+            $path = Storage::disk('cloudinary')->put('plats', $request->file('image'));
+            $data['image'] = $path;
+        }
+
+        $plat->update($data);
 
         return response()->json([
             'message' => 'Plat modifié avec succès',
@@ -51,6 +70,11 @@ class PlatController extends Controller
     public function destroy(Plat $plat)
     {
         $this->authorize('delete', $plat);
+
+        if ($plat->image) {
+            Storage::disk('cloudinary')->delete($plat->image);
+        }
+
         $plat->delete();
 
         return response()->json([
